@@ -1,0 +1,11 @@
+{
+    "name": "root/app",
+    "minimum-stability": "stable",
+    "require": {
+        "nyholm/psr7": "^1.5",
+        "spiral/roadrunner": "v2.10.0-rc.2",
+        "open-telemetry/opentelemetry": ">=0.0.10",
+        "monolog/monolog": "~3",
+        "php-http/guzzle6-adapter": "~2"
+    }
+}

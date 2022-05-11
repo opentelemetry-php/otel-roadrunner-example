@@ -1,0 +1,32 @@
+version: "3.6"
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: rr serve
+    ports:
+      - "80:8080"
+    volumes:
+      - "./src:/srv/app"
+    environment:
+      OTEL_SERVICE_NAME: php
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://collector:4318
+      OTEL_PHP_TRACES_PROCESSOR: simple
+    depends_on:
+      - collector
+      - zipkin
+
+  collector:
+    image: otel/opentelemetry-collector-contrib
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+
+  zipkin:
+    image: openzipkin/zipkin-slim
+    ports:
+      - "9411:9411"
