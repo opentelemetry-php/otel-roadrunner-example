@@ -1,21 +1,22 @@
+version: "2.7"
+
 http:
   address: "0.0.0.0:8080"
   access_logs: true
   middleware: [gzip, otel] # otel middleware should be applied first in the line (from right to left). Middleware order is: `request` --> `otel` -> `gzip` -> `http-plugin` -> `PHP worker`.
   pool:
     num_workers: 1
+  otel:
+    insecure: true
+    compress: false
+    client: http
+    exporter: otlp
+    service_name: rr # your app name
+    service_version: 1.0.0 # your app version
+    endpoint: collector:4318
 
 server:
   command: "php index.php"
-
-otel:
-  insecure: true # HTTP OR HTTPS
-  #compress: true # use gzip compression
-  #client: http # http client (connect via http) or grpc
-  exporter: otlp # otlp (datadog, new_relic (who support the OTLP protocol)), zipkin or stdout
-  service_name: rr # your app name
-  service_version: 1.0.0 # your app version
-  endpoint: collector:4318
 
 logs:
   level: debug

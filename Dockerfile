@@ -1,5 +1,5 @@
 ARG PHP_VERSION=8.1
-FROM ghcr.io/roadrunner-server/roadrunner:2.10.0-rc.2 AS roadrunner
+FROM ghcr.io/roadrunner-server/roadrunner:2.10.1 AS roadrunner
 FROM php:${PHP_VERSION}-alpine
 
 WORKDIR /srv/app
