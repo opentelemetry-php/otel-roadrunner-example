@@ -1,5 +1,7 @@
 <?php
 
+include "vendor/autoload.php";
+
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use OpenTelemetry\API\Trace\Propagation\TraceContextPropagator;
@@ -9,14 +11,10 @@ use Spiral\RoadRunner;
 use Nyholm\Psr7;
 use OpenTelemetry\SDK\Trace\TracerProviderFactory;
 
-include "vendor/autoload.php";
-
 $worker = RoadRunner\Worker::create();
 $psrFactory = new Psr7\Factory\Psr17Factory();
-
-LoggerHolder::set(
-    new Logger('otel-php', [new StreamHandler(STDERR, LogLevel::DEBUG)])
-);
+$logger = new Logger('otel-php', [new StreamHandler(STDERR, LogLevel::DEBUG)]);
+LoggerHolder::set($logger);
 
 $tracerProvider = (new TracerProviderFactory('example'))->create();
 $tracer = $tracerProvider->getTracer();
@@ -26,12 +24,22 @@ $worker = new RoadRunner\Http\PSR7Worker($worker, $psrFactory, $psrFactory, $psr
 while ($req = $worker->waitRequest()) {
     try {
         $context = TraceContextPropagator::getInstance()->extract($req->getHeaders());
-        $span = $tracer->spanBuilder('root')->setParent($context)->startSpan();
-        $rsp = new Psr7\Response();
-        $rsp->getBody()->write('Hello world!');
+        $rootSpan = $tracer->spanBuilder('root')->setParent($context)->startSpan();
+        $scope = $rootSpan->activate();
+        try {
+            $childSpan = $tracer->spanBuilder('child')->startSpan();
+            $rsp = new Psr7\Response();
+            $rsp->getBody()->write('Hello world!');
 
-        $worker->respond($rsp);
-        $span->end();
+            $worker->respond($rsp);
+            $childSpan->end();
+            $rootSpan->end();
+        } finally {
+            //detach scope, clearing state for next request
+            if ($error = $scope->detach()) {
+                $logger->error('Error detaching scope');
+            }
+        }
     } catch (\Throwable $e) {
         $worker->getWorker()->error((string)$e);
     }
