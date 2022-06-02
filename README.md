@@ -1,4 +1,4 @@
-# rr-otel-demo
+# Opentelemetry + roadrunner example
 Example of [roadrunner](roadrunner.dev)'s opentelemetry plugin integrating with [opentelemetry-php](https://github.com/open-telemetry/opentelemetry-php).
 
 RoadRunner's otel middleware emits some spans, and also injects distributed trace headers into the request.
