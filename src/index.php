@@ -16,8 +16,8 @@ $psrFactory = new Psr7\Factory\Psr17Factory();
 $logger = new Logger('otel-php', [new StreamHandler(STDERR, LogLevel::DEBUG)]);
 LoggerHolder::set($logger);
 
-$tracerProvider = (new TracerProviderFactory('example'))->create();
-$tracer = $tracerProvider->getTracer();
+$tracerProvider = (new TracerProviderFactory())->create();
+$tracer = $tracerProvider->getTracer('example');
 
 $worker = new RoadRunner\Http\PSR7Worker($worker, $psrFactory, $psrFactory, $psrFactory);
 
