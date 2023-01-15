@@ -4,7 +4,7 @@
     "require": {
         "nyholm/psr7": "^1.5",
         "spiral/roadrunner": "v2.10",
-        "open-telemetry/opentelemetry": ">=0.0.10",
+        "open-telemetry/opentelemetry": ">=0.0.17",
         "monolog/monolog": "~3",
         "php-http/guzzle6-adapter": "~2"
     }
