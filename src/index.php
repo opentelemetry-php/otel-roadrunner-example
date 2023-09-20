@@ -13,8 +13,6 @@ use OpenTelemetry\SDK\Trace\TracerProviderFactory;
 
 $worker = RoadRunner\Worker::create();
 $psrFactory = new Psr7\Factory\Psr17Factory();
-$logger = new Logger('otel-php', [new StreamHandler(STDERR, LogLevel::DEBUG)]);
-LoggerHolder::set($logger);
 
 $tracerProvider = (new TracerProviderFactory())->create();
 $tracer = $tracerProvider->getTracer('example');
@@ -23,11 +21,16 @@ $worker = new RoadRunner\Http\PSR7Worker($worker, $psrFactory, $psrFactory, $psr
 
 while ($req = $worker->waitRequest()) {
     try {
-        $context = TraceContextPropagator::getInstance()->extract($req->getHeaders());
-        $rootSpan = $tracer->spanBuilder('root')->setParent($context)->startSpan();
+        $parent = TraceContextPropagator::getInstance()->extract($req->getHeaders());
+        $rootSpan = $tracer
+            ->spanBuilder('root')
+            ->setParent($parent)
+            ->startSpan();
         $scope = $rootSpan->activate();
         try {
-            $childSpan = $tracer->spanBuilder('child')->startSpan();
+            $childSpan = $tracer
+                ->spanBuilder('child')
+                ->startSpan();
             $rsp = new Psr7\Response();
             $rsp->getBody()->write('Hello world!');
 
@@ -36,9 +39,7 @@ while ($req = $worker->waitRequest()) {
             $rootSpan->end();
         } finally {
             //detach scope, clearing state for next request
-            if ($error = $scope->detach()) {
-                $logger->error('Error detaching scope');
-            }
+            $scope->detach();
         }
     } catch (\Throwable $e) {
         $worker->getWorker()->error((string)$e);
