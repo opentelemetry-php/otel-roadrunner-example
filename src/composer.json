@@ -1,11 +1,17 @@
 {
     "name": "root/app",
-    "minimum-stability": "stable",
+    "minimum-stability": "beta",
     "require": {
         "nyholm/psr7": "^1.5",
         "spiral/roadrunner": "v2.10",
-        "open-telemetry/opentelemetry": ">=0.0.17",
+        "open-telemetry/sdk": "^1",
+        "open-telemetry/exporter-otlp": "^1",
         "monolog/monolog": "~3",
         "php-http/guzzle6-adapter": "~2"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
     }
 }
